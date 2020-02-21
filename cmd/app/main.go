@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 
 	"github.com/bmon/voting-website/pkg/api"
-	"github.com/bmon/voting-website/pkg/env"
 )
 
 func main() {
@@ -17,10 +21,28 @@ func main() {
 		log.Printf("Error loading .env file: %v", err)
 	}
 
-	config := env.LoadConfig()
-	// create and load config from environ
-	api.RegisterRoutes(config)
-	// serve the application and log requests as they arrive
-	log.Println("Starting server on :" + config.Port)
-	log.Fatal(http.ListenAndServe(":"+config.Port, nil))
+	// Instantiate the API object and serve the application
+	a := api.New()
+
+	srv := http.Server{
+		Addr:    fmt.Sprintf(":%s", a.Config.Port),
+		Handler: a.Router(),
+	}
+
+	closeSignal := make(chan os.Signal, 1)
+	signal.Notify(closeSignal, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-closeSignal
+		log.Println("Recieved ", sig, ", shutting down")
+
+		// We received an interrupt signal, shut down.
+		if err := srv.Shutdown(context.Background()); err != nil {
+			// Error from closing listeners, or context timeout:
+			log.Printf("HTTP server Shutdown: %v", err)
+		}
+	}()
+
+	log.Println("Starting HTTP Server. Listening on", srv.Addr)
+	log.Println(srv.ListenAndServe())
 }

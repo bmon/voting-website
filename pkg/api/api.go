@@ -1,21 +1,28 @@
 package api
 
 import (
-	"fmt"
-	"net/http"
+	"context"
+	"html/template"
 
 	"github.com/bmon/voting-website/pkg/env"
+	"github.com/coreos/go-oidc"
 )
 
-type api struct {
-	config *env.Config
+type API struct {
+	Config        *env.Config
+	indexTemplate *template.Template
+	verifier      *oidc.IDTokenVerifier
 }
 
-func RegisterRoutes(config *env.Config) {
-	a := &api{config}
-	http.HandleFunc("/", a.Hello)
-}
+func New() *API {
+	config := env.LoadConfig()
+	keySet := oidc.NewRemoteKeySet(context.Background(), "https://www.googleapis.com/oauth2/v3/certs")
 
-func (a *api) Hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello, world!")
+	return &API{
+		Config:        config,
+		indexTemplate: template.Must(template.ParseFiles("index.html")),
+		verifier: oidc.NewVerifier("https://accounts.google.com", keySet, &oidc.Config{
+			ClientID: config.OauthClientID,
+		}),
+	}
 }

@@ -1,0 +1,17 @@
+<!doctype html>
+<head>
+  <title>Emote Voting</title>
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-hd" content="mx51.io">
+  <meta name="google-signin-client_id" content="{{.Config.OauthClientID}}">
+  <script src="/static/app.js" async defer></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+  <div class="container">
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+  </div>
+  <div class="container">
+    <button onclick="whoami()">Who am I?</button>
+  </div>
+</body>

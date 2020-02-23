@@ -1,16 +1,25 @@
 var id_token;
 
-function onSignIn(googleUser) {
-  // The ID token you need to pass to your backend:
-  id_token = googleUser.getAuthResponse().id_token;
+function setMessage(msg) {
+  document.getElementById('message').innerHTML = msg;
+}
 
+function onSignIn(googleUser) {
+  id_token = googleUser.getAuthResponse().id_token;
+  var hd = document.head.querySelector("[name~=google-signin-hd][content]").content;
+
+  if (googleUser.getHostedDomain() != hd) {
+    setMessage("Please sign in with an account under the domain: " + hd);
+    return
+  }
+  setMessage("Click on an emote to vote for it!")
   loadEmotes();
 }
 
 function whoami() {
   fetch('/whoami', {headers: {"Authorization": id_token}})
     .then(
-      function(response) {
+      function (response) {
         if (response.status !== 200) {
           console.log('Looks like there was a problem. Status Code: ' +
             response.status);
@@ -18,12 +27,12 @@ function whoami() {
         }
 
         // Examine the text in the response
-        response.json().then(function(data) {
+        response.json().then(function (data) {
           console.log(data);
         });
       }
     )
-    .catch(function(err) {
+    .catch(function (err) {
       console.log('Fetch Error :-S', err);
     });
 }
@@ -41,7 +50,8 @@ function loadEmotes() {
         // Examine the text in the response
         response.json().then(function(data) {
           console.log(data);
-	  renderEmotes(data);
+	        renderEmotes(data);
+          setMessage("Click on an emote to vote for it!")
         });
       }
     )

@@ -26,6 +26,8 @@ FROM scratch AS final
 
 # Import the compiled executable from the first stage.
 COPY --from=builder /app /app
+COPY --from=builder /src/static /static
+COPY --from=builder /src/index.html /index.html
 
 # Import the root ca-certificates
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

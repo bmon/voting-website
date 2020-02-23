@@ -8,6 +8,7 @@ type Config struct {
 	Port          string `default:"8080"`
 	OauthClientID string `required:"true" split_words:"true"`
 	LoginDomain   string `required:"true" split_words:"true"`
+	ProjectID     string `required:"true" split_words:"true"`
 }
 
 func LoadConfig() *Config {

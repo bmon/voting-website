@@ -13,6 +13,7 @@ func (a *API) Router() *mux.Router {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	r.HandleFunc("/hello", a.hello)
 	r.HandleFunc("/whoami", a.mustVerify(a.whoami))
+	r.HandleFunc("/emotes", a.mustVerify(a.listEmotes))
 	r.HandleFunc("/", a.index)
 
 	return r

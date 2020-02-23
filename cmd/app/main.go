@@ -41,6 +41,7 @@ func main() {
 			// Error from closing listeners, or context timeout:
 			log.Printf("HTTP server Shutdown: %v", err)
 		}
+		a.Shutdown()
 	}()
 
 	log.Println("Starting HTTP Server. Listening on", srv.Addr)

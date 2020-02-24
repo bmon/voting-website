@@ -65,7 +65,8 @@ function renderEmotes(emotes) {
 	listdiv.innerHTML = "";
 	emotes.forEach((ele, index) => {
 		var newdiv = document.createElement("div");
-		newdiv.innerHTML = ele.name;
+		newdiv.innerHTML = `<img src="/static/emotes/${ele.filename}"></img><div>:${ele.name}:</div>`;
+    newdiv.classList.add("emote");
 		listdiv.appendChild(newdiv);
 	});
 }

@@ -6,6 +6,27 @@
   <meta name="google-signin-client_id" content="{{.Config.OauthClientID}}">
   <script src="/static/app.js" async defer></script>
   <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <style type="text/css">
+    .emotelist {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .emote {
+      width: 50px;
+      padding: 20px 60px;
+      white-space: nowrap;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .emote img {
+      height: 50px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -15,6 +36,6 @@
     <div>
       <p id="message">Please sign in to continue</p>
     </div>
-    <div id="emotelist"></div>
+    <div id="emotelist" class="emotelist"></div>
   </div>
 </body>

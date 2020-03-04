@@ -38,19 +38,20 @@ function whoami() {
 }
 
 function loadEmotes() {
-  fetch('/emotes', {headers: {"Authorization": id_token}})
-    .then(
-      function(response) {
-        if (response.status !== 200) {
-          console.log('Looks like there was a problem. Status Code: ' +
-            response.status);
-          return;
-        }
-
+  Promise.all([
+    fetch('/emotes', {headers: {"Authorization": id_token}}),
+    fetch('/votes', {headers: {"Authorization": id_token}}),
+  ])
+    .then((responses) => {
+      var[emotes, votes] = responses;
+      if (emotes.status !== 200 || votes.status !== 200) {
+        console.log("failed to load emote data")
+      }
         // Examine the text in the response
-        response.json().then(function(data) {
+        Promise.all([emotes.json(), votes.json()]).then(data => {
           console.log(data);
-	        renderEmotes(data);
+          var[emoteData, voteData] = data;
+	        renderEmotes(emoteData, voteData);
           setMessage("Click on an emote to vote for it!")
         });
       }
@@ -60,13 +61,51 @@ function loadEmotes() {
     });
 }
 
-function renderEmotes(emotes) {
+function renderEmotes(emotes, votes) {
 	var listdiv = document.getElementById("emotelist");
 	listdiv.innerHTML = "";
-	emotes.forEach((ele, index) => {
+  console.log(emotes)
+	emotes.forEach((emote, index) => {
 		var newdiv = document.createElement("div");
-		newdiv.innerHTML = `<img src="/static/emotes/${ele.filename}"></img><div>:${ele.name}:</div>`;
+    newdiv.dataset.emotename = emote.name
+		newdiv.innerHTML = `<img src="/static/emotes/${emote.filename}"></img><div>:${emote.name}:</div>`;
     newdiv.classList.add("emote");
+    if (votes.includes(emote.name)) {
+      newdiv.classList.add("voted");
+    }
+
+    newdiv.onclick = toggleVote;
 		listdiv.appendChild(newdiv);
 	});
+}
+
+function toggleVote() {
+  if (this.classList.contains("voting")) return;
+
+  this.classList.add("voting");
+  var action = "add"
+  if (this.classList.contains("voted")) {
+    action = "retract";
+  }
+
+  fetch('/vote', {
+    method: "POST",
+    headers: {
+      "Authorization": id_token,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `emote=${this.dataset.emotename}&action=${action}`
+  }).then(resp => {
+    this.classList.remove("voting");
+    if (resp.status === 200) {
+      if (action === "add") {
+        this.classList.add("voted");
+      } else {
+        this.classList.remove("voted");
+      }
+    }
+  }).catch(err => {
+    console.log(err)
+    this.classList.remove("voting");
+  })
 }

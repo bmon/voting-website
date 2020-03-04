@@ -6,23 +6,6 @@ import (
 	"net/http"
 )
 
-type User struct {
-	Aud           string
-	Azp           string
-	Email         string
-	EmailVerified bool
-	Exp           int64
-	FamilyName    string
-	GivenName     string
-	Hd            string
-	Iat           int64
-	Jti           string
-	Locale        string
-	Name          string
-	Picture       string
-	Sub           string
-}
-
 // logRequest middleware will log requests before handling them
 func logRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

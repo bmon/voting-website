@@ -2,8 +2,11 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
+	"net/http"
 
 	"cloud.google.com/go/firestore"
 	"github.com/bmon/voting-website/pkg/env"
@@ -37,4 +40,22 @@ func New() *API {
 
 func (a *API) Shutdown() {
 	a.store.Close()
+}
+
+func writeJSON(w http.ResponseWriter, data interface{}) {
+	js, err := json.Marshal(data)
+	if err != nil {
+		writeError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func writeError(w http.ResponseWriter, msg string, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	fmt.Fprintf(w, `{error: "%s"}`, msg)
+	return
 }

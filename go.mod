@@ -9,6 +9,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
+	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/joho/godotenv v1.3.0
 	github.com/k0kubun/pp v3.0.1+incompatible

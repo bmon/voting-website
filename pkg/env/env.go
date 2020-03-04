@@ -9,6 +9,7 @@ type Config struct {
 	OauthClientID string `required:"true" split_words:"true"`
 	LoginDomain   string `required:"true" split_words:"true"`
 	ProjectID     string `required:"true" split_words:"true"`
+	AdminEmails   string `required:"false" split_words:"true"`
 }
 
 func LoadConfig() *Config {

@@ -1,13 +1,10 @@
 package api
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"cloud.google.com/go/firestore"
 )
 
 type Emote struct {
@@ -18,14 +15,6 @@ type Emote struct {
 
 var emotesPath = "static/emotes/"
 var emoteList []*Emote
-
-func (a *API) incrementEmote(ctx context.Context, e *Emote, delta int64) error {
-	_, err := a.store.Collection("Emotes").Doc(e.Name).Set(ctx, map[string]interface{}{
-		"name":  e.Name,
-		"count": firestore.Increment(delta),
-	})
-	return err
-}
 
 func (a *API) listEmotes(w http.ResponseWriter, r *http.Request) {
 	if emoteList == nil {

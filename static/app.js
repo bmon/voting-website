@@ -8,10 +8,10 @@ function onSignIn(googleUser) {
   id_token = googleUser.getAuthResponse().id_token;
   var hd = document.head.querySelector("[name~=google-signin-hd][content]").content;
 
-  if (googleUser.getHostedDomain() != hd) {
-    setMessage("Please sign in with an account under the domain: " + hd);
-    return
-  }
+  //if (googleUser.getHostedDomain() != hd) {
+  //  setMessage("Please sign in with an account under the domain: " + hd);
+  //  return
+  //}
   setMessage("Click on an emote to vote for it!")
   loadEmotes();
 }

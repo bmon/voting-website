@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // logRequest middleware will log requests before handling them
@@ -29,7 +30,9 @@ func (a *API) mustVerify(handler http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		if u.Hd != a.Config.LoginDomain {
+		if strings.Contains(a.Config.AdminEmails, u.Email) {
+			u.Admin = true
+		} else if u.Hd != a.Config.LoginDomain {
 			writeError(w, "bad login domain", http.StatusForbidden)
 			return
 		}

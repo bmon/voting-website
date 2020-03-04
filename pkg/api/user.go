@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"cloud.google.com/go/firestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,12 +26,7 @@ type User struct {
 	Name          string   `firestore:"name"`
 	Picture       string   `firestore:"-"`
 	Votes         []string `firestore:"votes"`
-}
-
-func (a *API) CreateOrUpdateUser(ctx context.Context, u *User) error {
-	ref := a.store.Collection("Users").Doc(u.Sub)
-	_, err := ref.Set(ctx, u)
-	return err
+	Admin         bool     `firestore:"-"`
 }
 
 func (a *API) LoadUser(ctx context.Context, u *User) error {
@@ -70,32 +66,49 @@ func (a *API) listVotes(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, user.Votes)
 }
 
-func (a *API) VoteEmote(ctx context.Context, u *User, emote, action string) error {
+func (a *API) VoteEmote(ctx context.Context, u *User, emote string, action string) error {
+	var delta int
+	var arrayChange interface{}
 	switch action {
 	case "add":
-		for _, v := range u.Votes {
-			if v == emote {
-				// if the user already voted for it just return success - don't add it
-				return nil
-			}
-		}
-		u.Votes = append(u.Votes, emote)
-		// update count
+		delta = 1
+		arrayChange = firestore.ArrayUnion(emote)
 	case "retract":
-		for i, v := range u.Votes {
-			if v == emote {
-				// copy remaining values in slice backward one element
-				copy(u.Votes[i:], u.Votes[i+1:])
-				// truncate slice
-				u.Votes = u.Votes[:len(u.Votes)-1]
-				// update count
-				break
-			}
-		}
+		delta = -1
+		arrayChange = firestore.ArrayRemove(emote)
 	default:
 		return fmt.Errorf("VoteEmote: bad action supplied")
 	}
-	a.CreateOrUpdateUser(ctx, u)
 
-	return nil
+	return a.store.RunTransaction(ctx, func(context.Context, *firestore.Transaction) error {
+		ref := a.store.Collection("Users").Doc(u.Sub)
+		snap, err := ref.Get(ctx)
+		if err != nil && status.Code(err) != codes.NotFound {
+			return err
+		}
+
+		result, err := ref.Set(ctx, map[string]interface{}{
+			"sub":   u.Sub,
+			"name":  u.Name,
+			"email": u.Email,
+			"votes": arrayChange,
+		}, firestore.MergeAll)
+		if err != nil {
+			return err
+		}
+
+		// if there was an update (i.e the user's votes actually changed), update the emote count.
+		if result.UpdateTime.After(snap.UpdateTime) {
+			_, err := a.store.Collection("Emotes").Doc(emote).Set(ctx, map[string]interface{}{
+				"name":  emote,
+				"count": firestore.Increment(delta),
+			}, firestore.MergeAll)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
 }

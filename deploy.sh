@@ -7,4 +7,4 @@ REGION=asia-northeast1
 ENVCONF=$(cat .env | grep -v PORT | grep -v GOOGLE_APPLICATION_CREDENTIALS | tr '\n' ',')
 
 gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME
-gcloud run deploy $SERVICE_NAME --image gcr.io/$PROJECT_ID/$SERVICE_NAME --platform managed --set-env-vars=$ENVCONF --region=$REGION
+gcloud run deploy $SERVICE_NAME --image gcr.io/$PROJECT_ID/$SERVICE_NAME --platform managed --set-env-vars="$ENVCONF" --region=$REGION

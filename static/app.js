@@ -6,12 +6,7 @@ function setMessage(msg) {
 
 function onSignIn(googleUser) {
   id_token = googleUser.getAuthResponse().id_token;
-  var hd = document.head.querySelector("[name~=google-signin-hd][content]").content;
 
-  //if (googleUser.getHostedDomain() != hd) {
-  //  setMessage("Please sign in with an account under the domain: " + hd);
-  //  return
-  //}
   setMessage("Click on an emote to vote for it!")
   loadEmotes();
 }
@@ -45,7 +40,13 @@ function loadEmotes() {
     .then((responses) => {
       var[emotes, votes] = responses;
       if (emotes.status !== 200 || votes.status !== 200) {
-        console.log("failed to load emote data")
+        if (emotes.status === 403) {
+          var hd = document.head.querySelector("[name~=google-signin-hd][content]").content;
+          setMessage("Error: unauthorised. Please sign in with an account under the domain: " + hd);
+        } else {
+          console.log("failed to load emote data")
+        }
+        return
       }
         // Examine the text in the response
         Promise.all([emotes.json(), votes.json()]).then(data => {
